@@ -29,8 +29,8 @@ The tool reads JSON lines from stdin and writes enriched JSON lines to stdout. S
 Example:
 Flat field with echo (no nested objects):
 ```bash
-export USER_AGENT_FIELD="user_agent"
-echo '{"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}' | ./bin/ua-parser-darwin-arm64 | jq .
+echo '{"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}' | \
+USER_AGENT_FIELD="user_agent" ./bin/ua-parser-darwin-arm64 | jq .
 ```
 
 If a line does not contain the field (or it is empty), the line is returned unchanged.
@@ -63,8 +63,7 @@ input:
 pipeline:
   processors:
     - subprocess:
-        name: ua_parser
-        command: ["./bin/ua-parser-linux-amd64"]
+        name: /plugins/ua_parser
         env:
           USER_AGENT_FIELD: headers.user_agent
 

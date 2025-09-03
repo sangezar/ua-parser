@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -17,35 +17,32 @@ func main() {
 		os.Exit(1)
 	}
 
-	sc := bufio.NewScanner(os.Stdin)
-	const maxCapacity = 1024 * 1024
-	buf := make([]byte, 0, 64*1024)
-	sc.Buffer(buf, maxCapacity)
+	dec := json.NewDecoder(os.Stdin)
 	enc := json.NewEncoder(os.Stdout)
 
-	for sc.Scan() {
-		line := strings.TrimSpace(sc.Text())
-		if line == "" {
+	for {
+		var msg any
+		if err := dec.Decode(&msg); err != nil {
+			if err == io.EOF {
+				break
+			}
+			fmt.Fprintln(os.Stderr, "decode:", err)
 			continue
 		}
 
-		var obj map[string]any
-		if err := json.Unmarshal([]byte(line), &obj); err != nil {
-			fmt.Fprintln(os.Stderr, "invalid json:", err)
+		obj, ok := msg.(map[string]any)
+		if !ok {
+			_ = enc.Encode(msg)
 			continue
 		}
 
 		uaStr, prefix, ok := internal.GetByDotPath(obj, fieldPath)
 		if !ok || strings.TrimSpace(uaStr) == "" {
-			_ = enc.Encode(obj) // return unchanged
+			_ = enc.Encode(obj)
 			continue
 		}
 
 		internal.EnrichFlat(obj, prefix, uaStr)
 		_ = enc.Encode(obj)
-	}
-
-	if err := sc.Err(); err != nil {
-		fmt.Fprintln(os.Stderr, "scanner error:", err)
 	}
 }
