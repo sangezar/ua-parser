@@ -8,8 +8,8 @@ You can use it either:
 
 Key points:
 - Single binary, no runtime dependencies
-- Stateless and line-by-line processing (suitable for streaming)
-- Configured via the `USER_AGENT_FIELD` environment variable (dot-path to UA string)
+- Stateless streaming via JSON decoder (no need for newline delimiters)
+- Configure UA field via `--user-agent-field` flag (env `USER_AGENT_FIELD` as fallback)
 
 ### Build
 
@@ -24,13 +24,17 @@ Artifacts are in `bin/`:
 
 ### Console usage
 
-The tool reads JSON lines from stdin and writes enriched JSON lines to stdout. Set `USER_AGENT_FIELD` to the dot-path of the field containing the User-Agent string.
+The tool reads JSON objects from stdin and writes enriched JSON objects to stdout. Provide the User-Agent field path via flag (or env fallback).
 
-Example:
-Flat field with echo (no nested objects):
+Examples:
 ```bash
-echo '{"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}' | \
-USER_AGENT_FIELD="user_agent" ./bin/ua-parser-darwin-arm64 | jq .
+# Using flag
+echo '{"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}' \
+| ./bin/ua-parser-darwin-arm64 --user-agent-field user_agent | jq .
+
+# Using env (fallback)
+echo '{"user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}' \
+| USER_AGENT_FIELD=user_agent ./bin/ua-parser-darwin-arm64 | jq .
 ```
 
 If a line does not contain the field (or it is empty), the line is returned unchanged.
@@ -64,8 +68,7 @@ pipeline:
   processors:
     - subprocess:
         name: /plugins/ua_parser
-        env:
-          USER_AGENT_FIELD: headers.user_agent
+        args: ["--user-agent-field", "headers.user_agent"]
 
 output:
   stdout: {}

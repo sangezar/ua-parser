@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -11,9 +12,15 @@ import (
 )
 
 func main() {
-	fieldPath := os.Getenv("USER_AGENT_FIELD")
+	uaFieldFlag := flag.String("user-agent-field", "", "Dot-path to the User-Agent field")
+	flag.Parse()
+
+	fieldPath := strings.TrimSpace(*uaFieldFlag)
 	if fieldPath == "" {
-		fmt.Fprintln(os.Stderr, "USER_AGENT_FIELD env not set")
+		fieldPath = os.Getenv("USER_AGENT_FIELD")
+	}
+	if fieldPath == "" {
+		fmt.Fprintln(os.Stderr, "missing user agent field: pass --user-agent-field or set USER_AGENT_FIELD env")
 		os.Exit(1)
 	}
 
