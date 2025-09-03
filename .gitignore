@@ -1,0 +1,36 @@
+# Binaries and build artifacts
+bin/
+/bin
+build/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.pprof
+profile.out
+coverage/
+cover.*
+
+# Editors/IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS files
+.DS_Store
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Tooling
+.cursor/
+.history/
+
